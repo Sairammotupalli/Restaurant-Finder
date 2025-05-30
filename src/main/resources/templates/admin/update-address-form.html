@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Address</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container my-5">
+    <h1 class="text-center mb-4">Update Address</h1>
+    <form th:action="@{/admin/restaurant/update-address}" method="post">
+        <input type="hidden" name="restaurantId" th:value="${restaurant.id}">
+
+        <div class="mb-3">
+            <label for="street" class="form-label">Street</label>
+            <input type="text" id="street" name="street" th:value="${restaurant.address.street}" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="city" class="form-label">City</label>
+            <input type="text" id="city" name="city" th:value="${restaurant.address.city}" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="state" class="form-label">State</label>
+            <input type="text" id="state" name="state" th:value="${restaurant.address.state}" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="zipCode" class="form-label">Zip Code</label>
+            <input type="text" id="zipCode" name="zipCode" th:value="${restaurant.address.zipCode}" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="latitude" class="form-label">Latitude</label>
+            <input type="text" id="latitude" name="latitude" th:value="${restaurant.address.latitude}" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="longitude" class="form-label">Longitude</label>
+            <input type="text" id="longitude" name="longitude" th:value="${restaurant.address.longitude}" class="form-control" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Address</button>
+    </form>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container my-5">
+    <h1 class="text-center mb-4">Manage Restaurant</h1>
+
+    <!-- Restaurant Details -->
+    <div>
+        <h3>Details:</h3>
+        <p><strong>Name:</strong> <span th:text="${restaurant.name}"></span></p>
+        <p><strong>Cuisine:</strong> <span th:text="${restaurant.cuisine}"></span></p>
+        <p><strong>Price Range:</strong> <span th:text="${restaurant.priceRange}"></span></p>
+        <p><strong>Rating:</strong> <span th:text="${#numbers.formatDecimal(restaurant.averageRating, 0, 2)}"></span></p>
+        <p><strong>Opening Time:</strong> <span th:text="${restaurant.openTime}"></span></p>
+        <p><strong>Closing Time:</strong> <span th:text="${restaurant.closeTime}"></span></p>
+        <p><strong>Description:</strong> <span th:text="${restaurant.description}"></span></p>
+
+        <!-- Address Section -->
+        <div class="mt-3">
+            <p><strong>Address:</strong></p>
+            <div th:if="${restaurant.address != null}">
+                <p><strong>Street:</strong> <span th:text="${restaurant.address.street}"></span></p>
+                <p><strong>City:</strong> <span th:text="${restaurant.address.city}"></span></p>
+                <p><strong>State:</strong> <span th:text="${restaurant.address.state}"></span></p>
+                <p><strong>Zip Code:</strong> <span th:text="${restaurant.address.zipCode}"></span></p>
+                <p th:if="${restaurant.address.latitude != null && restaurant.address.longitude != null}">
+                    <strong>Coordinates:</strong>
+                    <span th:text="${restaurant.address.latitude}"></span>,
+                    <span th:text="${restaurant.address.longitude}"></span>
+                </p>
+                <a th:href="@{/admin/restaurant/{id}/update-address(id=${restaurant.id})}" class="btn btn-secondary">Update Address</a>
+            </div>
+            <div th:if="${restaurant.address == null}">
+                <p>No address available</p>
+                <a th:href="@{/admin/restaurant/{id}/add-address(id=${restaurant.id})}" class="btn btn-primary">Add Address</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Edit Restaurant Button -->
+    <div class="mt-4">
+        <a th:href="@{/admin/restaurant/{id}/edit(id=${restaurant.id})}" class="btn btn-warning">Edit Restaurant</a>
+    </div>
+
+    <!-- Button to Full Menu Page -->
+    <div class="mt-4">
+        <a th:href="@{/admin/menu/{id}(id=${restaurant.id})}" class="btn btn-primary mb-4">View Full Menu</a>
+    </div>
+
+    <!-- Reviews Section -->
+    <h2>Reviews</h2>
+    <div th:if="${#lists.isEmpty(reviews)}">
+        <p>No reviews available.</p>
+    </div>
+    <div th:unless="${#lists.isEmpty(reviews)}">
+        <div th:each="review : ${reviews}">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="'Rating: ' + ${review.rating} + ' / 5'"></h5>
+                    <h6 class="card-subtitle mb-2 text-muted"
+                        th:text="'By ' + ${review.user.userDetails.firstName} + ' ' + ${review.user.userDetails.lastName} + ' on ' + ${#temporals.format(review.reviewDate, 'dd MMM yyyy')}">
+                    </h6>
+                    <p class="card-text" th:text="${review.reviewText}">Review Text</p>
+                </div>
+            </div>
+        </div>
+        <!-- Pagination -->
+        <nav th:if="${reviews.hasPrevious() or reviews.hasNext()}">
+            <ul class="pagination">
+                <li class="page-item" th:classappend="${reviews.hasPrevious() ? '' : 'disabled'}">
+                    <a class="page-link" th:href="@{/restaurant/details/{id}(id=${restaurant.id}, page=${reviews.number - 1})}">Previous</a>
+                </li>
+                <li class="page-item" th:classappend="${reviews.hasNext() ? '' : 'disabled'}">
+                    <a class="page-link" th:href="@{/restaurant/details/{id}(id=${restaurant.id}, page=${reviews.number + 1})}">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Amenities Section -->
+    <div class="mt-5">
+        <h4>Amenities:</h4>
+        <form th:action="@{/admin/restaurant/add-amenity}" method="post" class="mb-3">
+            <input type="hidden" name="id" th:value="${restaurant.id}">
+            <input type="text" class="form-control" name="newAmenity" placeholder="Add new amenity">
+            <button type="submit" class="btn btn-primary mt-2">Add Amenity</button>
+        </form>
+        <div th:if="${#lists.isEmpty(amenities)}">
+            <p>No amenities available.</p>
+        </div>
+        <div th:unless="${#lists.isEmpty(amenities)}">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Amenity</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="amenity : ${amenities}">
+                    <td th:text="${amenity.amenity}"></td>
+                    <td>
+                        <form th:action="@{/admin/restaurant/delete-amenity}" method="post" style="display: inline;">
+                            <input type="hidden" name="id" th:value="${amenity.id}">
+                            <input type="hidden" name="restaurantId" th:value="${restaurant.id}">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Specialties Section -->
+    <div class="mt-5">
+        <h4>Specialties:</h4>
+        <form th:action="@{/admin/restaurant/add-specialty}" method="post" class="mb-3">
+            <input type="hidden" name="id" th:value="${restaurant.id}">
+            <input type="text" class="form-control" name="newSpecialty" placeholder="Add new specialty">
+            <button type="submit" class="btn btn-primary mt-2">Add Specialty</button>
+        </form>
+        <div th:if="${#lists.isEmpty(specialties)}">
+            <p>No specialties available.</p>
+        </div>
+        <div th:unless="${#lists.isEmpty(specialties)}">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Specialty</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="specialty : ${specialties}">
+                    <td th:text="${specialty.specialty}"></td>
+                    <td>
+                        <form th:action="@{/admin/restaurant/delete-specialty}" method="post" style="display: inline;">
+                            <input type="hidden" name="id" th:value="${specialty.id}">
+                            <input type="hidden" name="restaurantId" th:value="${restaurant.id}">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Dietary Options Section -->
+    <div class="mt-5">
+        <h4>Dietary Options:</h4>
+        <form th:action="@{/admin/restaurant/add-dietary-option}" method="post" class="mb-3">
+            <input type="hidden" name="id" th:value="${restaurant.id}">
+            <input type="text" class="form-control" name="newDietaryOption" placeholder="Add new dietary option">
+            <button type="submit" class="btn btn-primary mt-2">Add Dietary Option</button>
+        </form>
+        <div th:if="${#lists.isEmpty(dietaryOptions)}">
+            <p>No dietary options available.</p>
+        </div>
+        <div th:unless="${#lists.isEmpty(dietaryOptions)}">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Dietary Option</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="dietaryOption : ${dietaryOptions}">
+                    <td th:text="${dietaryOption.dietaryOption}"></td>
+                    <td>
+                        <form th:action="@{/admin/restaurant/delete-dietary-option}" method="post" style="display: inline;">
+                            <input type="hidden" name="id" th:value="${dietaryOption.id}">
+                            <input type="hidden" name="restaurantId" th:value="${restaurant.id}">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Menu Section -->
+    <div class="mt-5">
+        <h4>Menu:</h4>
+        <form th:action="@{/admin/restaurant/add-menu-item}" method="post" class="mb-3">
+            <input type="hidden" name="id" th:value="${restaurant.id}">
+            <input type="text" class="form-control" name="menuItemName" placeholder="Menu item name">
+            <input type="number" class="form-control mt-2" name="menuItemPrice" placeholder="Menu item price">
+            <button type="submit" class="btn btn-primary mt-2">Add Menu Item</button>
+        </form>
+        <div th:if="${#lists.isEmpty(menuItems)}">
+            <p>No menu items available.</p>
+        </div>
+        <div th:unless="${#lists.isEmpty(menuItems)}">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Menu Item</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="menuItem : ${menuItems}">
+                    <td th:text="${menuItem.name}"></td>
+                    <td th:text="${menuItem.price}"></td>
+                    <td>
+                        <form th:action="@{/admin/restaurant/delete-menu-item}" method="post" style="display: inline;">
+                            <input type="hidden" name="id" th:value="${menuItem.id}">
+                            <input type="hidden" name="restaurantId" th:value="${restaurant.id}">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <!-- Photos Section -->
+    <div class="mt-5">
+        <h4>Photos:</h4>
+        <form th:action="@{/admin/restaurant/add-photo}" method="post" class="mb-3">
+            <input type="hidden" name="id" th:value="${restaurant.id}">
+            <input type="text" class="form-control" name="photoUrl" placeholder="Photo URL">
+            <button type="submit" class="btn btn-primary mt-2">Add Photo</button>
+        </form>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Photo</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="photo : ${photos}">
+                <td><img th:src="${photo.photoUrl}" alt="Photo" style="width: 100px; height: 100px;"></td>
+                <td>
+                    <form th:action="@{/admin/restaurant/delete-photo}" method="post" style="display: inline;">
+                        <input type="hidden" name="id" th:value="${photo.id}">
+                        <input type="hidden" name="restaurantId" th:value="${restaurant.id}">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

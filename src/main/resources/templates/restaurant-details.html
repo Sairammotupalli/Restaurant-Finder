@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Restaurant Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+
+    <!-- Back to Dashboard Button -->
+    <div class="d-flex justify-content-start mb-4">
+        <a th:href="@{/restaurants}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+
+    <h1 class="text-center text-primary mb-4" th:text="${restaurant.name}">Restaurant Name</h1>
+
+    <!-- Restaurant Information -->
+    <div class="card p-4 mb-4">
+        <h5 class="card-title">Restaurant Information</h5>
+        <p><strong>Cuisine:</strong> <span th:text="${restaurant.cuisine}">Cuisine</span></p>
+        <p><strong>Price Range:</strong> <span th:text="${restaurant.priceRange}">Price Range</span></p>
+        <p><strong>Rating:</strong> <span th:text="${restaurant.averageRating != null ? #numbers.formatDecimal(restaurant.averageRating, 0, 2) : 'Not Rated'}">Rating</span></p>
+        <p><strong>Description:</strong> <span th:text="${restaurant.description}">Description</span></p>
+        <p><strong>Location:</strong>
+            <span th:text="(${restaurant.address.street ?: 'Not Available'}) + ', ' + (${restaurant.address.city ?: ''}) + ', ' + (${restaurant.address.state ?: ''}) + ', ' + (${restaurant.address.zipCode ?: ''})">
+                Address
+            </span>
+        </p>
+        <p><strong>Coordinates:</strong>
+            <span th:text="(${restaurant.address.latitude ?: 'N/A'}) + ', ' + (${restaurant.address.longitude ?: 'N/A'})">
+                Latitude and Longitude
+            </span>
+        </p>
+    </div>
+
+    <div class="mt-3">
+        <!-- Add to Favourites -->
+        <form th:action="@{'/restaurants/' + ${restaurant.id} + '/add-to-favourites'}" method="post" th:if="${!isFavourite}">
+            <button type="submit" class="btn btn-success">Add to Favourites</button>
+        </form>
+
+        <!-- Remove from Favourites -->
+        <form th:action="@{'/restaurants/' + ${restaurant.id} + '/remove-from-favourites'}" method="post" th:if="${isFavourite}">
+            <button type="submit" class="btn btn-danger">Remove from Favourites</button>
+        </form>
+    </div>
+
+
+    <!-- Related Entities Sections -->
+    <div class="card p-4 mb-4">
+        <h5 class="card-title">Amenities</h5>
+        <ul class="list-group">
+            <li class="list-group-item" th:each="amenity : ${amenities}" th:text="${amenity.amenity}">Amenity</li>
+        </ul>
+    </div>
+
+    <div class="card p-4 mb-4">
+        <h5 class="card-title">Specialties</h5>
+        <ul class="list-group">
+            <li class="list-group-item" th:each="specialty : ${specialties}" th:text="${specialty.specialty}">Specialty</li>
+        </ul>
+    </div>
+
+    <div class="card p-4 mb-4">
+        <h5 class="card-title">Dietary Options</h5>
+        <ul class="list-group">
+            <li class="list-group-item" th:each="dietaryOption : ${dietaryOptions}" th:text="${dietaryOption.dietaryOption}">Dietary Option</li>
+        </ul>
+    </div>
+
+    <div class="card p-4 mb-4">
+        <h5 class="card-title">Menu</h5>
+        <ul class="list-group">
+            <li class="list-group-item" th:each="menuItem : ${menuItems}" th:text="${menuItem.name + ' - $' + menuItem.price}">
+                Menu Item
+            </li>
+        </ul>
+    </div>
+
+    <div class="card p-4 mb-4">
+        <h5 class="card-title">Photos</h5>
+        <div class="row">
+            <div class="col-md-4 mb-3" th:each="photo : ${photos}">
+                <img th:src="${photo.photoUrl}" class="img-fluid rounded shadow-sm" alt="Restaurant Photo">
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="card p-4 mb-4">
+        <h5 class="card-title">Reviews</h5>
+        <ul class="list-group">
+            <li class="list-group-item" th:each="review : ${reviews.content}">
+                <!-- Reviewer Details -->
+                <p>
+                    <strong th:text="${review.user.userDetails.firstName + ' ' + review.user.userDetails.lastName}">Reviewer Name</strong>
+                    <span class="text-muted" th:text="'- ' + ${#temporals.format(review.reviewDate, 'dd MMM yyyy')}">Date</span>
+                </p>
+
+                <!-- Review Details -->
+<!--                <p class="mb-0"><strong>Rating:</strong>-->
+<!--                    <span class="text-warning">-->
+<!--                    <span th:each="star : ${#numbers.sequence(1, review.rating)}" class="fa fa-star"></span>-->
+<!--                    <span th:each="empty : ${#numbers.sequence(review.rating + 1, 5)}" class="fa fa-star-o"></span>-->
+<!--                </span>-->
+<!--                </p>-->
+                <p class="mb-0"><strong>Rating:</strong> <span th:text="${review.rating}"></span></p>
+                <p class="mb-0"><strong>Review Text:</strong> <span th:text="${review.reviewText}"></span></p>
+
+                <!-- View Button -->
+                <a class="btn btn-primary mt-2" th:href="@{'/reviews/' + ${review.id}}">View</a>
+            </li>
+        </ul>
+
+        <!-- Conditional Pagination -->
+        <nav aria-label="Review Pagination" class="mt-3" th:if="${reviews.totalPages > 1}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${reviews.hasPrevious ? '' : 'disabled'}">
+                    <a class="page-link" th:href="@{'/restaurants/' + ${restaurant.id} + '?page=' + ${reviews.number - 1}}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item" th:each="page : ${#numbers.sequence(1, reviews.totalPages)}"
+                    th:classappend="${page == reviews.number + 1 ? 'active' : ''}">
+                    <a class="page-link" th:href="@{'/restaurants/' + ${restaurant.id} + '?page=' + ${page - 1}}" th:text="${page}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${reviews.hasNext ? '' : 'disabled'}">
+                    <a class="page-link" th:href="@{'/restaurants/' + ${restaurant.id} + '?page=' + ${reviews.number + 1}}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="card p-4 mb-4">
+        <h5 class="card-title">Add a Review</h5>
+        <form th:action="@{'/reviews/add'}" method="post">
+            <input type="hidden" name="restaurantId" th:value="${restaurant.id}">
+
+            <!-- Rating Field -->
+            <div class="mb-3">
+                <label for="rating" class="form-label">Rating</label>
+                <select class="form-select" id="rating" name="rating" required>
+                    <option value="" selected disabled>Choose a rating</option>
+                    <option th:each="i : ${#numbers.sequence(1, 5)}" th:value="${i}" th:text="${i}"></option>
+                </select>
+            </div>
+
+            <!-- Review Text Field -->
+            <div class="mb-3">
+                <label for="reviewText" class="form-label">Review Text</label>
+                <textarea class="form-control" id="reviewText" name="reviewText" rows="3" required></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+        </form>
+    </div>
+
+
+</div>
+
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</body>
+</html>
