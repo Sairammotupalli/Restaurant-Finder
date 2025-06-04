@@ -126,8 +126,3 @@ The project follows a **Layered Architecture** for better separation of concerns
 - **Booking System:** Enable users to reserve tables directly.
 
 ---
-
-## Author
-
-**Dheeraj Gedupudi**  
-[Website](https://www.dheerajgedupudi.com) | [LinkedIn](https://linkedin.com/in/dheeraj-gedupudi) | [Email](mailto:dheerajgedupudi@gmail.com)
